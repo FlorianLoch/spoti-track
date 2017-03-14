@@ -1,5 +1,5 @@
 const adapter = require("../lib/spotifyAdapter");
-const expect = require('chai').expect;
+const expect = require("chai").expect;
 
 console.log(adapter);
 
