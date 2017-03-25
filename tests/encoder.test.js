@@ -1,6 +1,7 @@
 const expect = require("chai").expect;
 
 const encoder = require("../lib/encoder");
+const crypto = require("crypto");
 
 describe("encoder", () => {
     let block;
@@ -40,12 +41,34 @@ describe("encoder", () => {
     });
 
     describe("encodeMessage", () => {
-        it("should just combine _createBlockFromMessage and _addHMAC - at the moment!", () => {
+        // it("should combine _createBlockFromMessage, _addHMAC - and then encrypt it", () => {
+        //     const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
+
+        //     const encoded = encoder.encodeMessage(samplePOJSO, "MY SECRET KEY");
+            
+        //     expect(withHMAC).to.deep.equal(encoded);
+        // });
+
+        it("should be like this: encrypted block is 16 Byte longer due to IV added by AES-128-CBC", () => {
             const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
 
             const encoded = encoder.encodeMessage(samplePOJSO, "MY SECRET KEY");
             
-            expect(withHMAC).to.deep.equal(encoded);
+            console.log(withHMAC.length);
+            expect(withHMAC.length + 16).to.be.equal(encoded.length);
+        });
+
+        it("encoded block should be equal block after decryption", () => {
+            const key = "MY SECRET KEY";
+            const encoded = encoder.encodeMessage(samplePOJSO, key);
+            const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");            
+
+            const hashedKey = crypto.createHash("md5").update(Buffer(key, "ascii")).digest();
+            const cipher = crypto.createDecipher("aes-128-cbc", hashedKey);
+
+            const decrypted = Buffer.concat([cipher.update(encoded), cipher.final()]);
+
+            expect(decrypted).to.be.deep.equal(withHMAC);
         });
     });
 });
