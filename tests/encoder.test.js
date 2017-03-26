@@ -41,13 +41,13 @@ describe("encoder", () => {
     });
 
     describe("encodeMessage", () => {
-        // it("should combine _createBlockFromMessage, _addHMAC - and then encrypt it", () => {
-        //     const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
+        it("should combine _createBlockFromMessage, _addHMAC - when encrypted is not wanted", () => {
+            const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
 
-        //     const encoded = encoder.encodeMessage(samplePOJSO, "MY SECRET KEY");
+            const encoded = encoder.encodeMessage(samplePOJSO, "MY SECRET KEY", false);
             
-        //     expect(withHMAC).to.deep.equal(encoded);
-        // });
+            expect(withHMAC).to.deep.equal(encoded);
+        });
 
         it("should be like this: encrypted block is 16 Byte longer due to IV added by AES-128-CBC", () => {
             const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
@@ -60,13 +60,13 @@ describe("encoder", () => {
 
         it("encoded block should be equal block after decryption", () => {
             const key = "MY SECRET KEY";
-            const encoded = encoder.encodeMessage(samplePOJSO, key);
+            const encrypted = encoder.encodeMessage(samplePOJSO, key);
             const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");            
 
             const hashedKey = crypto.createHash("md5").update(Buffer(key, "ascii")).digest();
             const cipher = crypto.createDecipher("aes-128-cbc", hashedKey);
 
-            const decrypted = Buffer.concat([cipher.update(encoded), cipher.final()]);
+            const decrypted = Buffer.concat([cipher.update(encrypted), cipher.final()]);
 
             expect(decrypted).to.be.deep.equal(withHMAC);
         });
