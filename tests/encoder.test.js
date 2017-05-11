@@ -69,6 +69,7 @@ describe("encoder", () => {
             const decrypted = Buffer.concat([cipher.update(encrypted), cipher.final()]);
 
             expect(decrypted).to.be.deep.equal(withHMAC);
+            console.log(decrypted.toString());
         });
     });
 });
