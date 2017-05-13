@@ -3,39 +3,20 @@ const co = require("co");
 const colors = require('colors/safe');
 
 const httpService = require("./lib/httpService");
-const udpService = require("./lib/udpBroadcastService");
-const spotifyAdapter = require("./lib/spotifyAdapter");
+const UDPBroadcastService = require("./lib/udpBroadcastService");
+const trackMonitor = new (require("./lib/trackMonitor"))();
+
+let udpService;
 
 co(function* () {
     // TODO load config
     
     yield httpService.start(47000, "0.0.0.0");
-    console.log(colors.blue("\n==> Server is running on port 47000 on all interfaces!\n"));
+    console.log(colors.blue("\n==> HTTP server is running on port 47000 on all interfaces!"));
 
-    startMonitoringTrackChange();
+    udpService = new UDPBroadcastService(47000, "secret");
+    yield udpService.start("0.0.0.0");
+    console.log(colors.blue("==> UDP server is running on port 47000 on all interfaces!"));
+
+    trackMonitor.startMonitoringTrackChange(udpService);
 });
-
-function startMonitoringTrackChange() {
-    let lastTrack;
-    
-    setTimeout(() => {
-        co(chechForChange);
-    }, 5E3);
-
-    chechForChange();
-
-    function* chechForChange() {
-        const currentTrack = yield spotifyAdapter.getCurrentMetadata();
-
-        if (!areTracksEqual(currentTrack, lastTrack)) {
-            lastTrack = currentTrack;
-            udpService.broadcastNewTrack(currentTrack);
-
-            console.log(`=> Track changed. Now playing: ${colors.green(currentTrack.title)} from ${colors.green(currentTrack.artist)} on album ${colors.green(currentTrack.album)}.`);
-        }
-    }
-
-    function areTracksEqual(a, b) {
-        return a && b && a.artist === b.artist && a.album === b.album && a.title === b.title;
-    }
-}
