@@ -33,10 +33,10 @@ describe("encoder", () => {
     });
 
     describe("_addHMAC", () => {
-        it("should attach exactly 256 bit to block", () => {
+        it("should attach exactly 128 bit to block", () => {
             const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");
 
-            expect(withHMAC.length).to.be.equal( /* same as above for message */ 64 + /* 256 bits of HMAC */ 32);
+            expect(withHMAC.length).to.be.equal( /* same as above for message */ 64 + /* 128 bits of HMAC */ 16);
         });
     });
 
@@ -64,7 +64,7 @@ describe("encoder", () => {
             const withHMAC = encoder._addHMAC(block, "MY SECRET KEY");            
 
             const hashedKey = crypto.createHash("md5").update(Buffer(key, "ascii")).digest();
-            const cipher = crypto.createDecipher("aes-128-cbc", hashedKey);
+            const cipher = crypto.createDecipheriv("aes-128-cbc", hashedKey, Buffer.alloc(16));
 
             const decrypted = Buffer.concat([cipher.update(encrypted), cipher.final()]);
 
