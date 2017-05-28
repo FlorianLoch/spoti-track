@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 const co = require("co");
-const colors = require('colors/safe');
+const colors = require("colors/safe");
 
 const httpService = require("./lib/httpService");
 const UDPBroadcastService = require("./lib/udpBroadcastService");
